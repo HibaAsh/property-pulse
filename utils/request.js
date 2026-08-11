@@ -6,13 +6,13 @@ async function fetchProperties() {
     // Handle the case where the domain is not availabe yet
     if (!API_DOMAIN) return [];
 
-    const response = await fetch(`${API_DOMAIN}/properties`);
+    const res = await fetch(`${API_DOMAIN}/properties`);
 
-    if (!response.ok) {
+    if (!res.ok) {
       throw new Error("Failed to fetch data");
     }
 
-    return response.json();
+    return res.json();
   } catch (error) {
     console.error(error);
     return [];
@@ -26,13 +26,13 @@ async function fetchProperty(propertyId) {
     // Handle the case where the domain is not availabe yet
     if (!API_DOMAIN) return null;
 
-    const response = await fetch(`${API_DOMAIN}/properties/${propertyId}`);
+    const res = await fetch(`${API_DOMAIN}/properties/${propertyId}`);
 
-    if (!response.ok) {
+    if (!res.ok) {
       throw new Error("Failed to fetch data");
     }
 
-    return response.json();
+    return res.json();
   } catch (error) {
     console.error(error);
     return null;

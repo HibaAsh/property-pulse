@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { usePathname } from "next/navigation";
+
+import { signIn, signOut, useSession, getProviders } from "next-auth/react";
 
 import Image from "next/image";
 
@@ -12,21 +14,34 @@ import logo from "@/assets/images/logo-white.png";
 import profileDefault from "@/assets/images/profile.png";
 
 const Navbar = () => {
+  const { data: session } = useSession();
+  const profileImage = session?.user?.image;
+
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
 
-  // for now - will delete later
-  const [isLoggedIn, setIsLoggedIn] = useState(true)
+  const [providers, setProviders] = useState(null);
 
   const pathname = usePathname();
 
-  const isActiveLink = (pn) => {
-    let pnClass = "text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2"
-    
-    if(pathname === pn) pnClass += " bg-black"
+  useEffect(() => {
+    const setAuthProviders = async () => {
+      const res = await getProviders();
 
-    return pnClass
-  }
+      setProviders(res);
+    };
+
+    setAuthProviders();
+  }, []);
+
+  const isActiveLink = (pn) => {
+    let pnClass =
+      "text-white hover:bg-gray-900 hover:text-white rounded-md px-3 py-2";
+
+    if (pathname === pn) pnClass += " bg-black";
+
+    return pnClass;
+  };
 
   return (
     <nav className="bg-blue-700 border-b border-blue-500">
@@ -73,10 +88,7 @@ const Navbar = () => {
             {/* <!-- Desktop Menu Hidden below md screens --> */}
             <div className="hidden md:ml-6 md:block">
               <div className="flex space-x-2">
-                <Link
-                  href="/"
-                  className={isActiveLink("/")}
-                >
+                <Link href="/" className={isActiveLink("/")}>
                   Home
                 </Link>
                 <Link
@@ -86,7 +98,7 @@ const Navbar = () => {
                   Properties
                 </Link>
 
-                {isLoggedIn && (
+                {session && (
                   <Link
                     href="/properties/add"
                     className={isActiveLink("/properties/add")}
@@ -98,7 +110,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          {isLoggedIn ? (
+          {session ? (
             // Right Side Menu (Logged In)
             <div className="absolute inset-y-0 right-0 flex items-center pr-2 md:static md:inset-auto md:ml-6 md:pr-0">
               <Link href="/messages" className="relative group">
@@ -129,7 +141,7 @@ const Navbar = () => {
                 </span>
               </Link>
 
-              {isLoggedIn && (
+              {session && (
                 // Profile dropdown button
                 <div className="relative ml-3">
                   <div>
@@ -145,8 +157,11 @@ const Navbar = () => {
                       <span className="sr-only">Open user menu</span>
                       <Image
                         className="h-8 w-8 rounded-full"
-                        src={profileDefault}
+                        src={profileImage || profileDefault}
                         alt=""
+                        width={0}
+                        height={0}
+                        sizes="400px"
                       />
                     </button>
                   </div>
@@ -167,6 +182,7 @@ const Navbar = () => {
                         role="menuitem"
                         tabIndex="-1"
                         id="user-menu-item-0"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
                         Your Profile
                       </Link>
@@ -176,6 +192,7 @@ const Navbar = () => {
                         role="menuitem"
                         tabIndex="-1"
                         id="user-menu-item-2"
+                        onClick={() => setIsProfileMenuOpen(false)}
                       >
                         Saved Properties
                       </Link>
@@ -184,6 +201,9 @@ const Navbar = () => {
                         role="menuitem"
                         tabIndex="-1"
                         id="user-menu-item-2"
+                        onClick={() => {
+                          (setIsProfileMenuOpen(false), signOut());
+                        }}
                       >
                         Sign Out
                       </button>
@@ -196,10 +216,17 @@ const Navbar = () => {
             // Right Side Menu (Logged Out)
             <div className="hidden md:block md:ml-6">
               <div className="flex items-center">
-                <button className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2">
-                  <FaGoogle className="text-white mr-2" />
-                  <span>Login or Register</span>
-                </button>
+                {providers &&
+                  Object.values(providers).map((provider, index) => (
+                    <button
+                      key={index}
+                      onClick={() => signIn(provider.id)}
+                      className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2"
+                    >
+                      <FaGoogle className="text-white mr-2" />
+                      <span>Login or Register</span>
+                    </button>
+                  ))}
               </div>
             </div>
           )}
@@ -208,22 +235,16 @@ const Navbar = () => {
 
       {/* <!-- Mobile menu, show/hide based on menu state. --> */}
       {isMobileMenuOpen && (
-        <div id="mobile-menu">
+        <div id="mobile-menu" className="block md:hidden">
           <div className="space-y-1 px-2 pb-3 pt-2">
-            <Link
-              href="/"
-              className={isActiveLink("/")}
-            >
+            <Link href="/" className={isActiveLink("/")}>
               Home
             </Link>
-            <Link
-              href="/properties"
-              className={isActiveLink("/properties")}
-            >
+            <Link href="/properties" className={isActiveLink("/properties")}>
               Properties
             </Link>
 
-            {isLoggedIn ? (
+            {session ? (
               <Link
                 href="/properties/add"
                 className={isActiveLink("/properties/add")}
@@ -231,9 +252,16 @@ const Navbar = () => {
                 Add Property
               </Link>
             ) : (
-              <button className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2 my-5">
-                <span>Login or Register</span>
-              </button>
+              providers &&
+              Object.values(providers).map((provider, index) => (
+                <button
+                  key={index}
+                  onClick={() => signIn(provider.id)}
+                  className="flex items-center text-white bg-gray-700 hover:bg-gray-900 hover:text-white rounded-md px-3 py-2 my-5"
+                >
+                  <span>Login or Register</span>
+                </button>
+              ))
             )}
           </div>
         </div>
