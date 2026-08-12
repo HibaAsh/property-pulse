@@ -40,6 +40,9 @@ shortcuts.txt
 # vercel
 .vercel
 
+# db
+.properties.json
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
