@@ -1,6 +1,6 @@
 import PropertyCard from "@/components/PropertyCard";
 
-import { fetchProperties } from "@/utils/request";
+import { fetchProperties } from "@/utils/requests";
 // import properties from "@/properties.json"
 
 const PropertiesPage = async () => {
