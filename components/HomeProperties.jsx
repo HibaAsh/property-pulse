@@ -1,7 +1,7 @@
 import Link from "next/link";
 
 // import properties from "@/properties.json";
-import { fetchProperties } from "@/utils/request";
+import { fetchProperties } from "@/utils/requests";
 
 import PropertyCard from "./PropertyCard";
 
