@@ -1,4 +1,4 @@
-import AuthProvider from "@/components/AuthProvider";
+import ClientProviders from "./ClientProviders";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
@@ -16,18 +16,18 @@ export const metadata = {
 
 const MainLayout = ({ children }) => {
   return (
-    <AuthProvider>
-      <html lang="en">
-        <body>
+    <html lang="en">
+      <body>
+        <ClientProviders>
           <Navbar />
 
           <main className="p-2">{children}</main>
 
           <ToastContainer />
           <Footer />
-        </body>
-      </html>
-    </AuthProvider>
+        </ClientProviders>
+      </body>
+    </html>
   );
 };
 
