@@ -104,16 +104,6 @@ export const POST = async (request) => {
     await newProperty.save()
 
     return Response.redirect(`${process.env.NEXTAUTH_URL}/properties/${newProperty._id}`)
-
-    // return new Response(
-    //   JSON.stringify({
-    //     success: true,
-    //     message: "created successfully",
-    //   }),
-    //   {
-    //     status: 201,
-    //   },
-    // );
   } catch (error) {
     console.error(error);
     return new Response("Failed to add property", { status: 500 });
