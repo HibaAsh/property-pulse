@@ -6,17 +6,15 @@ export async function proxy(request) {
     secret: process.env.NEXTAUTH_SECRET,
   });
 
-  const isAuthenticated = !!token;
+  if (!token) {
+    const signInUrl = new URL("/api/auth/signin", request.url);
 
-  if (!isAuthenticated) {
-    const loginUrl = new URL("/login", request.url);
-
-    loginUrl.searchParams.set(
+    signInUrl.searchParams.set(
       "callbackUrl",
-      request.nextUrl.pathname
+      request.nextUrl.href
     );
 
-    return Response.redirect(loginUrl);
+    return Response.redirect(signInUrl);
   }
 
   return;
