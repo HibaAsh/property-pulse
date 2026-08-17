@@ -3,17 +3,24 @@ import Property from "@/models/Property";
 import { getSessionUser } from "@/utils/getSessionUser";
 import cloudinary from "@/config/cloudinary";
 
-// GET /api/properties
+// GET /api/properties/?page=1&pageSize=2
 export const GET = async (request) => {
   try {
     await connectDB();
 
-    const properties = await Property.find({});
+    const page = request.nextUrl.searchParams.get("page") || 1
+    const pageSize = request.nextUrl.searchParams.get("pageSize") || 6
+
+    const skip = (page - 1) * pageSize
+
+    const totalProperties = await Property.countDocuments({})
+    const properties = await Property.find({}).skip(skip).limit(pageSize);
 
     return new Response(
       JSON.stringify({
         success: true,
         data: properties,
+        total: totalProperties
       }),
     );
   } catch (error) {
@@ -75,7 +82,7 @@ export const POST = async (request) => {
     // Upload image(s) to cloudinary
     const imageUploadPromises = []
 
-    for(const image of images) {
+    for (const image of images) {
       const imageBuffer = await image.arrayBuffer()
       const imageArray = Array.from(new Uint8Array(imageBuffer))
       const imageData = Buffer.from(imageArray)
@@ -86,8 +93,8 @@ export const POST = async (request) => {
       // Make request to upload to Cloudinary
       const result = await cloudinary.uploader.upload(
         `data:image/png;base64,${imageBase64}`, {
-          folder: "property_pulse"
-        }
+        folder: "property_pulse"
+      }
       )
 
       imageUploadPromises.push(result.secure_url)
@@ -98,7 +105,7 @@ export const POST = async (request) => {
       // Add uploadedImages to propertyData object
       propertyData.images = uploadedImages
     }
-    
+
     const newProperty = new Property(propertyData)
 
     await newProperty.save()
