@@ -8,8 +8,8 @@ import PropertyCard from "./PropertyCard";
 const HomeProperties = async () => {
   const { data: properties } = await fetchProperties()
 
-  const recentProperties = properties
-    .sort(() => Math.random() - Math.random())
+  const recentProperties = [...properties]
+    .sort(() => Math.random() - 0.5)
     .slice(0, 3);
 
   return (
